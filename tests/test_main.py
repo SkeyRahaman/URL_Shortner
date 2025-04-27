@@ -65,7 +65,7 @@ def test_auth_token_right_credentials():
 def test_update_user(access_token):
     email = "admin2"
     headers = {"Authorization": f"Bearer {access_token}"}
-    response = client.post(f"/user/update_user?email={email}", headers=headers)
+    response = client.put(f"/user/update_user?email={email}", headers=headers)
     response_json = response.json()
 
 
