@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
-from authentication.authentication import get_curren_user
-from schemas import UrlData, UrlDisplay
+from app.authentication.authentication import get_curren_user
+from app.schemas import UrlData, UrlDisplay
 from sqlalchemy.orm import Session
-from database import get_db, db_url
-from database.models import DBUser
+from app.database import get_db, db_url
+from app.database.models import DBUser
 from fastapi.responses import RedirectResponse
 
 
@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 
-@router.post("/create_short_url", response_model=UrlDisplay)
+@router.post("/create_short_url", response_model=UrlDisplay, status_code=status.HTTP_201_CREATED)
 def create_short_url(url:str, description:str, db:Session = Depends(get_db),user : DBUser = Depends(get_curren_user)):
     return db_url.add_url(long_url=url, description=description, user_id=user.id, db=db)
 

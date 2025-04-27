@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
-from schemas import UserDetails
-from database.models import DBUser
+from app.schemas import UserDetails
+from app.database.models import DBUser
 from fastapi.exceptions import HTTPException
 from fastapi import status
-from database.hash import Hash
+from app.database.hash import Hash
 
 def check_email_address(db: Session,email : str):
     user = db.query(DBUser).filter(DBUser.email == email).first()

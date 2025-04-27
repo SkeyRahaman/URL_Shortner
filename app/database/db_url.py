@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 import hashlib
 import base64
-from database.models import DBUrl
+from app.database.models import DBUrl
 from config import Config
 from fastapi.exceptions import HTTPException
 from fastapi import status
@@ -30,4 +30,4 @@ def get_url(short_url : str, db:Session):
     if url:
         return url
     else:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL not found.")
