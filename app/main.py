@@ -5,8 +5,7 @@ from app.routers import user,url
 
 app = FastAPI(
     title="URL_Shortner",
-    description="This API powers a URL shortener app built with FastAPI.",
-    version="v1.0.3"
+    description="This API powers a URL shortener app built with FastAPI."
 )
 models.Base.metadata.create_all(engine)
 
