@@ -1,7 +1,7 @@
 import pytest
 from fastapi import status
 from tests import client, access_token
-from tests.test_main import test_new_user
+from tests.test_users_and_auth import test_new_user
 
 
 def get_response_after_creating_new_url(access_token):
@@ -49,4 +49,4 @@ def test_get_url_link(short_url):
 
 
 
-from tests.test_main import test_delete_user
+from tests.test_users_and_auth import test_delete_user
