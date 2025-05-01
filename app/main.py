@@ -3,7 +3,10 @@ from app.authentication import auth_router
 from app.database import engine, models
 from app.routers import user,url
 
-app = FastAPI()
+app = FastAPI(
+    title="URL_Shortner",
+    description="This API powers a URL shortener app built with FastAPI."
+)
 models.Base.metadata.create_all(engine)
 
 app.include_router(auth_router.router)
