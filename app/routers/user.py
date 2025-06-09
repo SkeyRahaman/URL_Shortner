@@ -21,6 +21,6 @@ def create_new_user(data : UserDetails, db: Session = Depends(get_db)):
 def update_user(email:str = None, password:str = None,db: Session = Depends(get_db), user : DBUser = Depends(get_curren_user)):
     return db_user.update_user(user=user,email=email,password=password,db=db)
 
-@router.post("/DELETE_USER")
+@router.delete("/{user_id}")
 def delete_user(user : DBUser = Depends(get_curren_user), db:Session = Depends(get_db)):
     return db_user.delete_user(user=user, db=db)
