@@ -1,0 +1,543 @@
+{
+	"info": {
+		"_postman_id": "29dee1f5-095c-4504-a49b-1c7e87fb8fd0",
+		"name": "URL_Shortner",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37708126"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response body should be healthy\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"HEALTHY\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/health",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Verify response email matches API email\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.email).to.eql(pm.variables.get(\"API User Email\"));",
+							"});",
+							"pm.test(\"Verify response username matches API Username\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.user_name).to.eql(pm.variables.get(\"API Username\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"{{API User Email}}\",\n  \"password\": \"{{API User Password}}\",\n  \"user_name\": \"{{API Username}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/user/new_user",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"new_user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Validate required fields",
+							"pm.test(\"Response contains access_token\", function () {",
+							"    pm.expect(pm.response.json()).to.have.property(\"access_token\");",
+							"});",
+							"",
+							"pm.test(\"Response contains token_type\", function () {",
+							"    pm.expect(pm.response.json()).to.have.property(\"token_type\");",
+							"});",
+							"",
+							"pm.test(\"Response contains user_name\", function () {",
+							"    pm.expect(pm.response.json()).to.have.property(\"user_name\");",
+							"});",
+							"",
+							"// Save token to environment variable",
+							"let jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"token\", jsonData.access_token);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "{{API Username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{API User Password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/auth/token",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"// Check for a successful status code",
+							"pm.test(\"Status code is 200 or 201\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"// Check that required fields exist in the response",
+							"pm.test(\"Response contains user_name\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"user_name\");",
+							"    pm.expect(jsonData.user_name).to.be.a(\"string\");",
+							"});",
+							"",
+							"pm.test(\"Response contains email\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"email\");",
+							"    pm.expect(jsonData.email).to.be.a(\"string\");",
+							"});",
+							"",
+							"// Check that password is not returned (for security reasons)",
+							"pm.test(\"Password is not exposed in the response\", function () {",
+							"    pm.expect(jsonData).to.not.have.property(\"password\");",
+							"});",
+							"",
+							"// Optional: Save user_name to environment variable",
+							"pm.environment.set(\"user_name\", jsonData.user_name);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/user/update_user?email=new_email@gmail.com&password={{API User Password}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"update_user"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "new_email@gmail.com"
+						},
+						{
+							"key": "password",
+							"value": "{{API User Password}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"// Check for status code",
+							"pm.test(\"Status code is 200 or 201\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							"",
+							"// Validate fields",
+							"pm.test(\"Response contains long_url\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"long_url\");",
+							"    pm.expect(jsonData.long_url).to.be.a(\"string\");",
+							"});",
+							"",
+							"pm.test(\"Response contains description\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"description\");",
+							"    pm.expect(jsonData.description).to.be.a(\"string\");",
+							"});",
+							"",
+							"pm.test(\"Response contains short_url\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"short_url\");",
+							"    pm.expect(jsonData.short_url).to.be.a(\"string\");",
+							"});",
+							"",
+							"// Save short_url as a collection variable",
+							"pm.collectionVariables.set(\"short_url\", jsonData.short_url);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/url/create_short_url?url={{Long URL}}&description={{Long URL Description}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"url",
+						"create_short_url"
+					],
+					"query": [
+						{
+							"key": "url",
+							"value": "{{Long URL}}"
+						},
+						{
+							"key": "description",
+							"value": "{{Long URL Description}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Short URL object",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"// Check status code",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.expect(pm.response.code).to.eql(200);",
+							"});",
+							"",
+							"// Validate long_url matches the stored variable",
+							"pm.test(\"Returned long_url matches expected value\", function () {",
+							"    const expectedLongUrl = pm.variables.get(\"Long URL\");",
+							"    pm.expect(jsonData).to.have.property(\"long_url\");",
+							"    pm.expect(jsonData.long_url).to.eql(expectedLongUrl);",
+							"});",
+							"",
+							"// (Optional) Validate description if available",
+							"pm.test(\"Returned description matches expected value\", function () {",
+							"    const expectedDescription = pm.variables.get(\"description\");",
+							"    if (jsonData.description && expectedDescription) {",
+							"        pm.expect(jsonData.description).to.eql(expectedDescription);",
+							"    }",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/url/get_url_object/{{short_url}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"url",
+						"get_url_object",
+						"{{short_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET RERIRECTED",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Assert status code is 302",
+							"pm.test(\"Status code is 302 (Redirect)\", function () {",
+							"    pm.response.to.have.status(302);",
+							"});",
+							"",
+							"// Assert redirect location matches the original long_url",
+							"pm.test(\"Redirect URL matches expected long_url\", function () {",
+							"    const expectedLongUrl = pm.variables.get(\"Long URL\");",
+							"    const locationHeader = pm.response.headers.get(\"Location\");",
+							"    pm.expect(locationHeader).to.eql(expectedLongUrl);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"followRedirects": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/url/{{short_url}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"url",
+						"{{short_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"// Check for successful status code",
+							"pm.test(\"Status code is 200 or 204\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+							"});",
+							"",
+							"// Check that the response contains the expected message",
+							"pm.test(\"Response confirms user deletion\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"Message\");",
+							"    pm.expect(jsonData.Message).to.eql(\"User Deleted.\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/user/DELETE_USER",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"DELETE_USER"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "https://url-shortner-ergb.onrender.com",
+			"type": "default"
+		},
+		{
+			"key": "API Username",
+			"value": "apiuser",
+			"type": "default"
+		},
+		{
+			"key": "API User Password",
+			"value": "apiuserpassword",
+			"type": "default"
+		},
+		{
+			"key": "API User Email",
+			"value": "apiuser@gmail.com",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "dummy"
+		},
+		{
+			"key": "Long URL",
+			"value": "http://sakibmondal7.pythonanywhere.com/",
+			"type": "default"
+		},
+		{
+			"key": "Long URL Description",
+			"value": "LONG Url Description with.",
+			"type": "default"
+		},
+		{
+			"key": "short_url",
+			"value": ""
+		}
+	]
+}
