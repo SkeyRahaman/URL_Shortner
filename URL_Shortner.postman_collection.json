@@ -18,7 +18,7 @@
 							"});",
 							"pm.test(\"Response body should be healthy\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.message).to.eql(\"HEALTHY\");",
+							"    pm.expect(jsonData.status).to.eql(\"HEALTHY\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -88,13 +88,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{BASE_URL}}/user/new_user",
+					"raw": "{{BASE_URL}}/users",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
-						"user",
-						"new_user"
+						"users"
 					]
 				}
 			},
@@ -175,6 +174,79 @@
 			"response": []
 		},
 		{
+			"name": "GET USER",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Basic response validation",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has JSON body\", function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"// Validate response structure and values",
+							"pm.test(\"Verify user data structure\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response).to.be.an('object');",
+							"    pm.expect(response).to.have.all.keys('id', 'user_name', 'email');",
+							"    pm.expect(response.id).to.be.a('number');",
+							"    pm.expect(response.user_name).to.be.a('string');",
+							"    pm.expect(response.email).to.be.a('string');",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"{{API User Email}}\",\n  \"password\": \"{{API User Password}}\",\n  \"user_name\": \"{{API Username}}\"\n}"
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/users/me",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Update User",
 			"event": [
 				{
@@ -226,13 +298,13 @@
 					}
 				],
 				"url": {
-					"raw": "{{BASE_URL}}/user/update_user?email=new_email@gmail.com&password={{API User Password}}",
+					"raw": "{{BASE_URL}}/users/me?email=new_email@gmail.com&password={{API User Password}}",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
-						"user",
-						"update_user"
+						"users",
+						"me"
 					],
 					"query": [
 						{
@@ -301,12 +373,12 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL}}/url/create_short_url?url={{Long URL}}&description={{Long URL Description}}",
+					"raw": "{{BASE_URL}}/urls/create_short_url?url={{Long URL}}&description={{Long URL Description}}",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
-						"url",
+						"urls",
 						"create_short_url"
 					],
 					"query": [
@@ -365,14 +437,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL}}/url/get_url_object/{{short_url}}",
+					"raw": "{{BASE_URL}}/urls/{{short_url}}/details",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
-						"url",
-						"get_url_object",
-						"{{short_url}}"
+						"urls",
+						"{{short_url}}",
+						"details"
 					]
 				}
 			},
@@ -413,12 +485,218 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL}}/url/{{short_url}}",
+					"raw": "{{BASE_URL}}/urls/{{short_url}}",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
-						"url",
+						"urls",
+						"{{short_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET LIST of urls",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Basic response validation",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has JSON body\", function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"// Get response data (assuming array with single item)",
+							"const jsonData = pm.response.json()[0];",
+							"",
+							"// Validate response structure",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"    pm.expect(jsonData).to.have.all.keys('long_url', 'description', 'id', 'short_url');",
+							"    pm.expect(jsonData.long_url).to.be.a('string');",
+							"    pm.expect(jsonData.description).to.be.a('string');",
+							"    pm.expect(jsonData.id).to.be.a('number');",
+							"    pm.expect(jsonData.short_url).to.be.a('string');",
+							"});",
+							"",
+							"// Validate URL values",
+							"pm.test(\"Long URL matches expected value\", function () {",
+							"    const expectedLongUrl = pm.variables.get(\"Long URL\") || \"http://sakibmondal7.pythonanywhere.com/\";",
+							"    pm.expect(jsonData.long_url).to.eql(expectedLongUrl);",
+							"});",
+							"",
+							"pm.test(\"Description matches expected value\", function () {",
+							"    const expectedDescription = pm.variables.get(\"description\") || \"LONG Url Description with.\";",
+							"    pm.expect(jsonData.description).to.eql(expectedDescription);",
+							"});",
+							"",
+							"// Validate URL formats",
+							"pm.test(\"Long URL has valid format\", function () {",
+							"    pm.expect(jsonData.long_url).to.match(/^https?:\\/\\/.+/);",
+							"});",
+							"",
+							"pm.test(\"Short URL has valid format\", function () {",
+							"    pm.expect(jsonData.short_url).to.match(/^[A-Za-z0-9]{8}$/); // 8 alphanumeric chars",
+							"});",
+							"",
+							"// Validate ID is positive number",
+							"pm.test(\"ID is valid\", function () {",
+							"    pm.expect(jsonData.id).to.be.a('number').above(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/urls",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"urls"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update URL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"// Check status code",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.expect(pm.response.code).to.eql(200);",
+							"});",
+							"",
+							"// Validate long_url matches the stored variable",
+							"pm.test(\"Returned long_url matches expected value\", function () {",
+							"    const expectedLongUrl = pm.variables.get(\"Long Url Updated\");",
+							"    pm.expect(jsonData).to.have.property(\"long_url\");",
+							"    pm.expect(jsonData.long_url).to.eql(expectedLongUrl);",
+							"});",
+							"",
+							"// (Optional) Validate description if available",
+							"pm.test(\"Returned description matches expected value\", function () {",
+							"    const expectedDescription = pm.variables.get(\"Long URL Description Updated\");",
+							"    if (jsonData.description && expectedDescription) {",
+							"        pm.expect(jsonData.description).to.eql(expectedDescription);",
+							"    }",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"long_url\": \"{{Long Url Updated}}\",\n  \"description\": \"{{Long URL Description Updated}}\",\n  \"short_url\": \"{{short_url}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/urls/{{short_url}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"urls",
+						"{{short_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE URL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"",
+							"// Check for successful status code",
+							"pm.test(\"Status code is 200 or 204\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+							"});",
+							"",
+							"// Check that the response contains the expected message",
+							"pm.test(\"Response confirms user deletion\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"Message\");",
+							"    pm.expect(jsonData.Message).to.eql(\"URL Deleted.\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/urls/{{short_url}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"urls",
 						"{{short_url}}"
 					]
 				}
@@ -462,16 +740,16 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{BASE_URL}}/user/DELETE_USER",
+					"raw": "{{BASE_URL}}/users/me",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
-						"user",
-						"DELETE_USER"
+						"users",
+						"me"
 					]
 				}
 			},
@@ -538,6 +816,16 @@
 		{
 			"key": "short_url",
 			"value": ""
+		},
+		{
+			"key": "Long Url Updated",
+			"value": "https://www.linkedin.com/in/shakib-mondal/",
+			"type": "default"
+		},
+		{
+			"key": "Long URL Description Updated",
+			"value": "My LinkedIn Profile",
+			"type": "default"
 		}
 	]
 }

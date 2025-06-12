@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["AUTHENTICATION"]
 )
 
-@router.post("/token")
+@router.post("/token", name="token")
 def get_token(request: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequestForm), db:Session = Depends(get_db)):
     user = db.query(DBUser).filter(DBUser.user_name == request.username).first()
     if not user:

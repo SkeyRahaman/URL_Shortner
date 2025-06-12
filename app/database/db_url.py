@@ -31,3 +31,46 @@ def get_url(short_url : str, db:Session):
         return url
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL not found.")
+    
+# For GET /urls (list)
+def get_user_urls(user_id: int, skip: int, limit: int, db: Session):
+    return db.query(DBUrl).filter(DBUrl.user_id == user_id).offset(skip).limit(limit).all()
+
+# In db_url.py
+def update_url(
+    short_url: str,
+    new_long_url: str,
+    new_description: str,  # Add this parameter
+    user_id: int,
+    db: Session
+):
+    url = db.query(DBUrl).filter(
+        DBUrl.short_url == short_url,
+        DBUrl.user_id == user_id
+    ).first()
+    
+    if not url:
+        raise HTTPException(status_code=404, detail="URL not found")
+    
+    url.long_url = new_long_url
+    url.description = new_description  # Update description
+    db.commit()
+    db.refresh(url)
+    return url
+
+# For DELETE /urls/{short_url}
+def delete_url(short_url: str, user_id: int, db: Session):
+    url = db.query(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id).first()
+    if not url:
+        raise HTTPException(status_code=404, detail="URL not found or unauthorized")
+    db.delete(url)
+    db.commit()
+
+# For DELETE /urls/{short_url}
+def delete_url(short_url: str, user_id: int, db: Session):
+    url = db.query(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id).first()
+    if not url:
+        raise HTTPException(status_code=404, detail="URL not found or unauthorized")
+    db.delete(url)
+    db.commit()
+    return {"Message" : "URL Deleted."}
