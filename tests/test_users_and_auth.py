@@ -1,5 +1,6 @@
 from tests import client
 from tests import access_token
+from config import Config
 
 
 def test_new_user():
@@ -60,7 +61,7 @@ def test_auth_token_right_credentials():
     assert "expires_in" in response_json
     assert response_json["token_type"] == "bearer" 
     assert response_json["user_name"] == "test_username"
-    assert response_json["expires_in"] == 1800  # 30 minutes * 60 seconds
+    assert response_json["expires_in"] == Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60  # Convert minutes to seconds
 
 
 
