@@ -31,6 +31,6 @@ def get_token(request: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequest
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "expires_in": Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert minutes to seconds
+        "expires_in": int(Config.ACCESS_TOKEN_EXPIRE_MINUTES) * 60,  # Convert minutes to seconds
         "user_name": user.user_name
     }
