@@ -6,6 +6,7 @@ from app.database import  get_db
 from app.database.models import DBUser
 from app.database.hash import Hash
 from app.authentication.authentication import create_access_token
+from config import Config
 
 
 router = APIRouter(
@@ -30,5 +31,6 @@ def get_token(request: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequest
     return {
         "access_token": access_token,
         "token_type": "bearer",
+        "expires_in": Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert minutes to seconds
         "user_name": user.user_name
     }

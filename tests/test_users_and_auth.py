@@ -57,8 +57,10 @@ def test_auth_token_right_credentials():
     
     assert "access_token" in response_json
     assert "token_type" in response_json
+    assert "expires_in" in response_json
     assert response_json["token_type"] == "bearer" 
     assert response_json["user_name"] == "test_username"
+    assert response_json["expires_in"] == 1800  # 30 minutes * 60 seconds
 
 
 
