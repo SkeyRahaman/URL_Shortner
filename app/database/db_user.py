@@ -11,10 +11,17 @@ def check_email_address(db: Session,email : str):
         return True 
     else :
         return False
+    
+def check_username_exist(db: Session,username : str):
+    user = db.query(DBUser).filter(DBUser.user_name == username).first()
+    if user:
+        return True 
+    else :
+        return False
 
 # Create User
 def create_user(db: Session, data : UserDetails):
-    if check_email_address(db=db, email=data.email):
+    if check_email_address(db=db, email=data.email) or check_username_exist(db=db,username=data.user_name):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered.")
     new_user = DBUser(
         user_name = data.user_name,
@@ -28,7 +35,7 @@ def create_user(db: Session, data : UserDetails):
 
 def update_user(user : DBUser,email:str,password:str, db:Session):
     db_user = db.query(DBUser).filter(DBUser.id == user.id).first()
-    if user:
+    if db_user:
         if email:
             user.email = email
         if password:
@@ -40,7 +47,7 @@ def update_user(user : DBUser,email:str,password:str, db:Session):
     
 def delete_user(user : DBUser, db: Session):
     db_user = db.query(DBUser).filter(DBUser.id == user.id).first()
-    if user:
+    if db_user:
         db.delete(db_user)
         db.commit()
         return {"Message" : "User Deleted."}
@@ -53,8 +60,3 @@ def get_user(user_name:str, db:Session):
         return user
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")
-
-
-
-
-

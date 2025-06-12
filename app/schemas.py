@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 
 class UserDetailsUpdatable(BaseModel):
     email : str = None
@@ -8,17 +8,19 @@ class UserDetails(UserDetailsUpdatable):
     user_name : str
 
 class UserDisplay(BaseModel):
-    ser_name : str
+    id :int
+    user_name : str
     email : str = None
-    class Config():   #to convert the model to this
-        from_attributes = True
-    
+    model_config = ConfigDict(populate_by_name=True)
 
 class UrlData(BaseModel):
-    long_url :str
-    description :str
+    long_url: str  # Ensures valid URLs
+    description: str = Field(max_length=200)  # Limit description length
 
 class UrlDisplay(UrlData):
+    id :int
     short_url :str
-    class Config():   #to convert the model to this
-        from_attributes = True
+    model_config = ConfigDict(populate_by_name=True)
+
+class UrlDataUpdate(UrlData):
+    short_url: str 
