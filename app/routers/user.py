@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from app.schemas import UserDetails, UserDetailsUpdatable
+from app.schemas import UserDetails, UserDetailsUpdatable, UserDisplay
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.database import db_user
@@ -24,3 +24,7 @@ def update_user(email:str = None, password:str = None,db: Session = Depends(get_
 @router.post("/DELETE_USER")
 def delete_user(user : DBUser = Depends(get_curren_user), db:Session = Depends(get_db)):
     return db_user.delete_user(user=user, db=db)
+
+@router.get("/me", response_model=UserDisplay)
+def get_current_user(user: DBUser = Depends(get_curren_user)):
+    return user

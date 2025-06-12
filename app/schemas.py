@@ -8,7 +8,7 @@ class UserDetails(UserDetailsUpdatable):
     user_name : str
 
 class UserDisplay(BaseModel):
-    ser_name : str
+    user_name : str
     email : str = None
     class Config():   #to convert the model to this
         from_attributes = True
