@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  url_shortner_dev:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app  # Live code updates
+    command: uvicorn app.main:app --reload --host 0.0.0.0
+
+  url_shortner_prod:
+    build: .
+    ports:
+      - "8001:8000"
+    command: uvicorn app.main:app --reload --host 0.0.0.0
+    

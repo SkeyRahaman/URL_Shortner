@@ -1,17 +1,17 @@
-# Use official Python base image
-FROM python:3.13-slim
+# Base image (lightweight Python 3.11)
+FROM python:3.11-slim
 
-# Install git inside the container
-RUN apt-get update && apt-get install -y git
-
-# Set working directory
+# Set working directory inside the container
 WORKDIR /app
 
-# Clone the repository
-RUN git clone https://github.com/SkeyRahaman/URL_Shortner.git .
+# Copy requirements first (for caching)
+COPY requirements.txt .
 
-# Install Python dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Command to run the FastAPI app
+# Copy the rest of the code
+COPY . .
+
+# Command to run the app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
