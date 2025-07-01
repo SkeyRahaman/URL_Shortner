@@ -4,6 +4,8 @@ from app.database import engine, models
 from app.routers import urls, users
 from datetime import datetime,timezone
 from config import Config
+import os
+import signal
 
 app = FastAPI(
     title="URL_Shortner",
@@ -23,3 +25,8 @@ async def health_check():
             "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "version": Config.VERSION
         }
+
+@app.get(f"{Config.URL_PREFIX}/CRASH")
+async def crash_app():
+    os.kill(os.getpid(), signal.SIGTERM)  # or SIGKILL
+    return {"status": "CRASHED"}  # This line will not execute

@@ -1,18 +1,30 @@
 version: '3.8'
 
 services:
-  url_shortner_dev:
+  backend:
     build: .
-    container_name: url_shortner_dev
+    image: url_shortener_backend:scalable
+    container_name: url_shortener_backend
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app/app  # Live code updates
-    command: uvicorn app.main:app --reload --host 0.0.0.0
+      - ./app:/app/app
+    depends_on:
+      - url_shortener_db
+    environment:
+      - DATABASE_URL=postgresql://postgres:admin@url_shortener_db:5432/url_shortener_db
 
-  url_shortner_prod:
-    build: .
-    container_name: url_shortner_prod
+  url_shortener_db:
+    image: postgres:14
+    container_name: url_shortener_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: url_shortener_db
     ports:
-      - "8001:8000"
-    command: uvicorn app.main:app --reload --host 0.0.0.0
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
