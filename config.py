@@ -1,5 +1,6 @@
+import os
 class Config:
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./shortener.db"
+    SQLALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL',"sqlite:///./shortener.db")
 
     SECRET_KEY = "Some random secret key"
     ALGORITHM = "HS256"
