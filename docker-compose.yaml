@@ -10,8 +10,8 @@ services:
       - DATABASE_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@database:3306/${MYSQL_DATABASE}
     depends_on:
       - database
-    volumes:
-      - ./app:/app/app
+    # volumes:
+    #   - ./app:/app/app
     command: uvicorn app.main:app --host 0.0.0.0 --reload
 
   database:
