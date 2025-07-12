@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: sakibmondal7/url_shortner:latest
+        ports:
+        - containerPort: 8000
+        env:
+
+        - name: DATABASE_PR0TOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_PR0TOCOL
+
+        - name: DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_USER  
+
+        - name: DATABASE_PASSW0RD
+          valueFrom:
+            secretKeyRef: 
+              name: app-secrets
+              key: DATABASE_PASSW0RD
+              
+        - name: DATABASE_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_HOSTNAME
+
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_PORT
+
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_NAME
+
+        - name: URL_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: URL_PREFIX        

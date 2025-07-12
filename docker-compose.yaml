@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  api_backend:
+    build: .
+    image: sakibmondal7/url_shortner
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PR0TOCOL=${DATABASE_PR0TOCOL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSW0RD=${DATABASE_PASSW0RD}
+      - DATABASE_HOSTNAME=${DATABASE_HOSTNAME}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - URL_PREFIX=${URL_PREFIX}
+    depends_on:
+      - database
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://api_backend:8000/${URL_PREFIX}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  database:
+    image: mysql:latest
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DATABASE_NAME}
+      - MYSQL_USER=${DATABASE_USER}
+      - MYSQL_PASSWORD=${DATABASE_PASSW0RD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
+  
