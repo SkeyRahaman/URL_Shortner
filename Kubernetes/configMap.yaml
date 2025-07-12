@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  URL_PREFIX: /api/v2
+  DATABASE_PR0TOCOL: mysql+pymysql
+  DATABASE_USER: admin
+  DATABASE_HOSTNAME: mysql-service
+  DATABASE_PORT: "3306"
+  DATABASE_NAME: url_shortner

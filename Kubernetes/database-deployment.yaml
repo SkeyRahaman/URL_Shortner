@@ -18,24 +18,24 @@ spec:
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
-            secretKeyRef:
-              name: db-secrets
-              key: mysql-root-password
-        - name: MYSQL_DATABASE
-          valueFrom:
-            secretKeyRef:
-              name: db-secrets
-              key: mysql-database
-        - name: MYSQL_USER
-          valueFrom:
-            secretKeyRef:
-              name: db-secrets
-              key: mysql-user
+            secretKeyRef: 
+              name: app-secrets
+              key: MYSQL_ROOT_PASSWORD
         - name: MYSQL_PASSWORD
           valueFrom:
-            secretKeyRef:
-              name: db-secrets
-              key: mysql-password
+            secretKeyRef: 
+              name: app-secrets
+              key: DATABASE_PASSW0RD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_NAME
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_USER  
         ports:
         - containerPort: 3306
         volumeMounts:

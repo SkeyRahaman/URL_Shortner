@@ -11,7 +11,7 @@ app = FastAPI(
     version=Config.VERSION
 )
 models.Base.metadata.create_all(engine)
-
+print("PREFIX :- ",Config.URL_PREFIX)
 app.include_router(auth_router.router, prefix=Config.URL_PREFIX)
 app.include_router(users.router, prefix=Config.URL_PREFIX)
 app.include_router(urls.router, prefix=Config.URL_PREFIX)
