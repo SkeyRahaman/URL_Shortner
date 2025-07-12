@@ -1,103 +1,139 @@
+# URL Shortener
 
-# URL Shortner
+[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg)](https://fastapi.tiangolo.com/)
+[![MySQL](https://img.shields.io/badge/Database-MySQL%2FSQLite-orange.svg)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/Deployment-Docker-blue.svg)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5.svg)](https://kubernetes.io/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A simple FastAPI application to shorten URLs.
+## 📝 Project Description
 
-## Table of Contents
+This is a basic URL shortener application designed to provide shortened URLs for longer web addresses. It features a robust backend built with FastAPI, offering essential functionalities like user authentication and login using JSON Web Tokens (JWT). The application is designed to be database-agnostic, leveraging SQLAlchemy as its ORM, which allows seamless integration with various databases, including MySQL (for production) and SQLite (ideal for testing). It provides a comprehensive set of API endpoints to shorten, edit, retrieve details, and manage URLs, all secured with token-based authentication.
 
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
-  - [Running the Application](#running-the-application)
-  - [Authentication](#authentication)
-  - [User Endpoints](#user-endpoints)
-  - [URL Endpoints](#url-endpoints)
-- [License](#license)
+## 📸 Screenshots
 
-## Getting Started
+1. Swagger Docs
+    ![alt text](<screenshots/swager.png>)
+2. ReDocs
+    ![alt text](<screenshots/redoc.png>)
 
-This section will guide you on how to get the URL Shortner application running on your local machine.
+## ⚙️ Installation Guide
 
-### Prerequisites
+You can set up and run this application using various methods:
 
-- Python 3.8+
+### a. Direct Installation on Your System
 
-### Installation
+1.  **Prerequisites:** Ensure you have Python 3.8+ installed on your system.
+2.  **Clone the Repository:**
+    ```bash
+    git clone [https://github.com/SkeyRahaman/URL_Shortner](https://github.com/SkeyRahaman/URL_Shortner)
+    cd URL_Shortner
+    ```
+3.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  **Environment Variables:** Create a `.env` file in the root directory of the project and add the following environment variables. Adjust values as per your setup.
 
-1. Clone the repository:
+    ```dotenv
+    URL_PREFIX=/api/v2
 
-   ```bash
-   git clone https://github.com/your-username/your-repository.git
-   ```
+    # Database Configuration (for MySQL)
+    MYSQL_ROOT_PASSWORD=secret_root
+    DATABASE_PROTOCOL=mysql+pymysql
+    DATABASE_USER=admin
+    DATABASE_PASSWORD=secret
+    DATABASE_HOSTNAME=database
+    DATABASE_PORT=3306
+    DATABASE_NAME=url_shortner
 
-2. Navigate to the project directory:
+    # For SQLite (uncomment and use this for testing, comment out MySQL settings)
+    # DATABASE_PROTOCOL=sqlite:///./sql_app.db
+    # DATABASE_USER=
+    # DATABASE_PASSWORD=
+    # DATABASE_HOSTNAME=
+    # DATABASE_PORT=
+    # DATABASE_NAME=
+    ```
+    * **Note for SQLite:** To use SQLite for testing, change `DATABASE_PROTOCOL` to `sqlite:///./sql_app.db` and leave other `DATABASE_` variables empty.
+5.  **Run the Application:**
+    ```bash
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ```
+    The application will be accessible at `http://localhost:8000`.
 
-   ```bash
-   cd your-repository
-   ```
+### b. Docker Compose
 
-3. Install the required dependencies:
+1.  **Prerequisites:** Ensure Docker and Docker Compose are installed on your system.
+2.  **Edit Environment File:** Copy `sample.env` to `.env` and edit the variables as per your requirements.
+3.  **Spin Up Services:**
+    ```bash
+    docker-compose up --build -d
+    ```
+    This will build the Docker images and spin up the application and database services. The application will typically be available at `http://localhost:8000`.
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+### c. Kubernetes Deployment
 
-## Usage
+1.  **Prerequisites:** Ensure you have `kubectl` installed and a Kubernetes cluster (e.g., Minikube, Docker Desktop Kubernetes) configured.
+2.  **Navigate to Kubernetes Folder:**
+    ```bash
+    cd Kubernetes
+    ```
+    (Ensure this `Kubernetes` directory contains the following files: `api-deployment.yaml`, `api-service.yaml`, `configMap.yaml`, `database-deployment.yaml`, `database-service.yaml`, `pvc.yaml`, `pv.yaml`, `secrets.yaml`)
+3.  **Apply Kubernetes Manifests:**
+    ```bash
+    kubectl apply -f ./
+    ```
+4.  **Get Service URL (for Minikube):**
+    If you are using Minikube, you can get the service URL using:
+    ```bash
+    minikube service api-service
+    ```
 
-### Running the Application
+## 🚀 Tech Stack
 
-To run the application, use the following command:
+* **Database:** MySQL, SQLite (or any other database compatible with SQLAlchemy)
+* **Backend:** FastAPI, SQLAlchemy (ORM), JWT (for authentication), Python
+* **CI/CD & Orchestration:** Docker, Kubernetes
 
-```bash
-uvicorn app.main:app --reload
-```
+## 📚 API Endpoints
 
-> _Assuming your main application file is named `main.py` and your FastAPI application instance is named `app`._
+| Method | Endpoint | Description |
+| :----- | :---------------------------------------- | :------------------------------------ |
+| `POST` | `/api/v2/auth/token` | Get JWT access token |
+| `POST` | `/api/v2/users` | Create a new user account |
+| `GET` | `/api/v2/users/me` | Get current authenticated user |
+| `PUT` | `/api/v2/users/me` | Update current authenticated user |
+| `DELETE` | `/api/v2/users/me` | Delete current authenticated user |
+| `POST` | `/api/v2/urls/create_short_url` | Create a short URL |
+| `GET` | `/api/v2/urls/{short_url}` | Redirect to original URL |
+| `PUT` | `/api/v2/urls/{short_url}` | Update short URL |
+| `DELETE` | `/api/v2/urls/{short_url}` | Delete short URL |
+| `GET` | `/api/v2/urls/{short_url}/details` | Get short URL details |
+| `GET` | `/api/v2/urls/` | List all short URLs by the user |
+| `GET` | `/api/v2/health` | Health check |
 
-### Authentication
+## 🤝 Contributing Guidelines
 
-**POST** `/auth/token`  
-_Description_: Get an authentication token.  
-> You’ll need to provide login credentials (e.g., username and password) in the request body. The response will include a JWT token for authenticated access.
+We welcome contributions to this project! If you'd like to contribute, please follow these steps:
 
-### User Endpoints
+1.  **Fork** the repository.
+2.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `bugfix/issue-description`.
+3.  **Make your changes** and ensure your code adheres to the project's coding standards.
+4.  **Write clear, concise commit messages.**
+5.  **Push your branch** to your forked repository.
+6.  **Open a Pull Request** to the `main` branch of this repository, describing your changes in detail.
 
-**POST** `/user/new_user`  
-_Description_: Create a new user.  
-_Expected Body_:  
-```json
-{
-  "username": "your_username",
-  "password": "your_password"
-}
-```
+For more detailed contributing guidelines, please refer to the `CONTRIBUTING.md` file (if available in the repository).
 
-**POST** `/user/update_user`  
-_Description_: Update an existing user.  
-_Expected Body_:  
-```json
-{
-  "username": "your_username",
-  "new_data": {
-    "email": "new_email@example.com"
-  }
-}
-```
+## 📞 Contact / Support
 
-### URL Endpoints
+If you have any questions, suggestions, or encounter issues, feel free to reach out:
 
-**POST** `/url/create_short_url`  
-_Description_: Create a new short URL.  
-_Expected Body_:  
-```json
-{
-  "original_url": "https://example.com"
-}
-```
+* **GitHub Profile:** [SkeyRahaman](https://github.com/SkeyRahaman/URL_Shortner)
+* **Email:** [sakibmondal7@gmail.com](mailto:sakibmondal7@gmail.com)
 
-**GET** `/url/get_url_object/{short_url}`  
-_Description_: Retrieve the details of a shortened URL object using its short URL identifier.
+Please feel free to open an issue on the [GitHub Issues page](https://github.com/SkeyRahaman/URL_Shortner/issues) for any bugs or feature requests.
 
-**GET** `/url/{short_url}`  
-_Description_: Redirect to the original URL associated with the provided short URL.
+You can also find more about my work on my portfolio: [http://sakibmondal7.pythonanywhere.com/](http://sakibmondal7.pythonanywhere.com/)
