@@ -9,7 +9,7 @@
 
 ## 📝 Project Description
 
-This is a basic URL shortener application designed to provide shortened URLs for longer web addresses. It features a robust backend built with FastAPI, offering essential functionalities like user authentication and login using JSON Web Tokens (JWT). The application is designed to be database-agnostic, leveraging SQLAlchemy as its ORM, which allows seamless integration with various databases, including MySQL (for production) and SQLite (ideal for testing). It provides a comprehensive set of API endpoints to shorten, edit, retrieve details, and manage URLs, all secured with token-based authentication.
+This is a basic URL shortener application designed to provide shortened URLs for longer web addresses. It features a robust backend built with FastAPI, offering essential functionalities like user authentication and login using JSON Web Tokens (JWT). The application is designed to be database-agnostic, leveraging SQLAlchemy as its ORM, which allows seamless integration with various databases, including MySQL (for production) and SQLite (ideal for testing). It provides a comprehensive set of API endpoints to shorten, edit, retrieve details, and manage URLs, all secured with token-based authentication. The project also includes a comprehensive test suite written with Pytest to ensure reliability and correctness.
 
 ## 📸 Screenshots
 
@@ -95,7 +95,25 @@ You can set up and run this application using various methods:
 
 * **Database:** MySQL, SQLite (or any other database compatible with SQLAlchemy)
 * **Backend:** FastAPI, SQLAlchemy (ORM), JWT (for authentication), Python
+* **Testing:** Pytest
 * **CI/CD & Orchestration:** Docker, Kubernetes
+
+## ✅ Tests
+
+This project includes a suite of unit and integration tests written using `pytest`. To run the tests:
+
+1.  Ensure you have followed the "Direct Installation on Your System" steps.
+2.  Install the test dependencies:
+    ```bash
+    pip install -r requirements.txt
+    pip install -r requirements_test.txt
+    ```
+3.  Navigate to the root directory of the project.
+4.  Run the tests using the `pytest` command:
+    ```bash
+    pytest
+    ```
+    This will discover and run all tests in the project.
 
 ## 📚 API Endpoints
 
