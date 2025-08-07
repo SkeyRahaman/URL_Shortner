@@ -4,7 +4,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from app.database import  get_db
 from app.database.models import DBUser
-from app.database.hash import Hash
+from app.database.hash import PasswordHasher
 from app.authentication.authentication import create_access_token
 
 
@@ -21,7 +21,7 @@ def get_token(request: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequest
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Invalid Credentials.",
         )
-    if not Hash.verify(user.password, request.password):
+    if not PasswordHasher.verify_password(plain_password=request.password, hashed_password=user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Credentials.",

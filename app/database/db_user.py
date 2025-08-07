@@ -1,61 +1,60 @@
-from sqlalchemy.orm import Session
 from app.schemas import UserDetails
 from app.database.models import DBUser
 from fastapi.exceptions import HTTPException
 from fastapi import status
-from app.database.hash import Hash
+from app.database.hash import PasswordHasher
 
-def check_email_address(db: Session,email : str):
-    user = db.query(DBUser).filter(DBUser.email == email).first()
-    if user:
-        return True 
-    else :
-        return False
-    
-def check_username_exist(db: Session,username : str):
-    user = db.query(DBUser).filter(DBUser.user_name == username).first()
-    if user:
-        return True 
-    else :
-        return False
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-# Create User
-def create_user(db: Session, data : UserDetails):
-    if check_email_address(db=db, email=data.email) or check_username_exist(db=db,username=data.user_name):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered.")
+async def check_email_address(db: AsyncSession,email : str):
+    result = await db.execute(select(DBUser).filter(DBUser.email == email))
+    user = result.scalars().first()
+    return bool(user)
+
+async def check_username_exist(db: AsyncSession,username : str):
+    result = await db.execute(select(DBUser).filter(DBUser.user_name == username))
+    user = result.scalars().first()
+    return bool(user)
+
+async def create_user(db: AsyncSession, data : UserDetails):
     new_user = DBUser(
         user_name = data.user_name,
         email = data.email,
-        password = Hash.dcrypt(data.password)
+        password = PasswordHasher.get_password_hash(data.password)
     )
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user) #to generate id
+    await db.commit()
+    await db.refresh(new_user)
     return new_user
 
-def update_user(user : DBUser,email:str,password:str, db:Session):
-    db_user = db.query(DBUser).filter(DBUser.id == user.id).first()
+async def update_user(db: AsyncSession, user : DBUser,email:str,password:str):
+    result = await db.execute(select(DBUser).filter(DBUser.id == user.id))
+    db_user = result.scalars().first()
     if db_user:
         if email:
-            user.email = email
+            db_user.email = email
         if password:
-            user.password = Hash.dcrypt(password)
-        db.commit()
+            db_user.password = PasswordHasher.get_password_hash(password)
+        await db.commit()
+        await db.refresh(db_user)
         return db_user
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")
     
-def delete_user(user : DBUser, db: Session):
-    db_user = db.query(DBUser).filter(DBUser.id == user.id).first()
+async def delete_user(user : DBUser, db: AsyncSession):
+    result = await db.execute(select(DBUser).filter(DBUser.email == user.email))
+    db_user = result.scalars().first()
     if db_user:
-        db.delete(db_user)
-        db.commit()
+        await db.delete(db_user)
+        await db.commit()
         return {"Message" : "User Deleted."}
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")
     
-def get_user(user_name:str, db:Session):
-    user = db.query(DBUser).filter(DBUser.user_name == user_name).first()
+async def get_user(user_name:str, db: AsyncSession):
+    result = await db.execute(select(DBUser).filter(DBUser.user_name == user_name))
+    user = result.scalars().first()
     if user:
         return user
     else:

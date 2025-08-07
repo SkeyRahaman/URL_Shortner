@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from jose import jwt
 
 from app.database import get_db
-from app.database.hash import Hash
+from app.database.hash import PasswordHasher
 from app.main import app
 from app.database.models import Base, DBUser
 from config import Config as settings
@@ -39,7 +39,7 @@ def test_user(db_session):
     user = DBUser(
         user_name = settings.TEST_USER['username'],
         email = settings.TEST_USER['email'],
-        password = Hash.dcrypt(settings.TEST_USER['password'],)
+        password = PasswordHasher.get_password_hash(settings.TEST_USER['password'],)
     )
     db_session.add(user)
     db_session.commit()
