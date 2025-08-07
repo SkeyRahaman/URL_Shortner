@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from app.database import db_user
 from app.schemas import UserDetails
 from app.database.models import DBUser
-from app.database.hash import Hash
+from app.database.hash import PasswordHasher
 
 
 def test_check_email_address_exists(test_user, db_session):
@@ -48,7 +48,7 @@ def test_update_user_email_password(test_user, db_session):
 
     updated_user = db_user.update_user(test_user, email=new_email, password=new_password, db=db_session)
     assert updated_user.email == new_email
-    assert Hash.verify(updated_user.password, new_password)
+    assert PasswordHasher.verify_password(plain_password=updated_user.password, hashed_password=new_password)
 
 
 def test_update_user_not_found(db_session):
