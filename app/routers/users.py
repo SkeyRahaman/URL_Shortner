@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from fastapi.exceptions import HTTPException
 
 from app.schemas import UserDetails, UserDisplay
 from app.database import get_db, db_user
 from app.database.models import DBUser
 from app.authentication.authentication import get_current_user
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
     prefix="/users",
@@ -19,13 +21,15 @@ router = APIRouter(
     summary="Create a new user account",
     response_description="The created user details"
 )
-def create_new_user(data: UserDetails, db: Session = Depends(get_db)):
+async def create_new_user(data: UserDetails, db: AsyncSession = Depends(get_db)):
     """
     Creates a new user with the provided details.
     
     - **data**: UserDetails schema containing email and password
     - Returns: Newly created user information
     """
+    if await db_user.check_email_address(db=db, email=data.email) or await db_user.check_username_exist(db=db,username=data.user_name):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered.")
     return db_user.create_user(db, data)
 
 @router.get(
@@ -36,7 +40,7 @@ def create_new_user(data: UserDetails, db: Session = Depends(get_db)):
     summary="Get current authenticated user details",
     response_description="The authenticated user's details"
 )
-def get_current_user(user: DBUser = Depends(get_current_user)):
+async def get_current_user(user: DBUser = Depends(get_current_user)):
     """
     Returns the details of the currently authenticated user.
     
@@ -52,10 +56,10 @@ def get_current_user(user: DBUser = Depends(get_current_user)):
     summary="Update current user's details",
     response_description="Updated user details"
 )
-def update_user(
+async def update_user(
     email: str = None,
     password: str = None,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     user: DBUser = Depends(get_current_user)
 ):
     """
@@ -72,9 +76,9 @@ def update_user(
     summary="Delete current user account",
     response_description="Confirmation of deletion"
 )
-def delete_user(
+async def delete_user(
     user: DBUser = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Permanently deletes the current user's account.
