@@ -2,6 +2,7 @@ from app.schemas import UserDetails
 from app.database.models import DBUser
 from fastapi.exceptions import HTTPException
 from fastapi import status
+from fastapi.concurrency import run_in_threadpool
 from app.database.hash import PasswordHasher
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +22,7 @@ async def create_user(db: AsyncSession, data : UserDetails):
     new_user = DBUser(
         user_name = data.user_name,
         email = data.email,
-        password = PasswordHasher.get_password_hash(data.password)
+        password = await run_in_threadpool(PasswordHasher.get_password_hash(data.password)
     )
     db.add(new_user)
     await db.commit()
