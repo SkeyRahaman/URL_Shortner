@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import Relationship, declarative_base
+from sqlalchemy.orm import Relationship
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
@@ -19,3 +20,4 @@ class DBUrl(Base):
     description = Column(String(400))
     user_id = Column(Integer, ForeignKey("Users.id"))
     user = Relationship("DBUser", back_populates="urls")
+    

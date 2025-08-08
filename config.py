@@ -13,7 +13,7 @@ class Config:
     # SQLite has a different URL format
     if DB_PROTOCOL.lower() == 'sqlite':
         # SQLite connection string (uses a file path)
-        DATABASE_URL = f"sqlite:///{DB_NAME}"
+        DATABASE_URL = f"sqlite+aiosqlite:///{DB_NAME}"
     elif DB_PROTOCOL.lower() == 'manual':
         DATABASE_URL = os.getenv('DATABASE_URL_MANUAL', f"sqlite:///{DB_NAME}") 
     else:

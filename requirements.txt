@@ -7,3 +7,4 @@ python-multipart
 pymysql
 cryptography
 psycopg2
+aiosqlite

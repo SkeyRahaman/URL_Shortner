@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, status, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.authentication.authentication import get_current_user
-from app.schemas import UrlData, UrlDisplay, UrlDataUpdate
-from app.database import get_db, db_url
+from app.authentication.dependencies import get_current_user
+from app.schemas import UrlDisplay, UrlDataUpdate
+from app.database import db_url
+from app.database.dependencies import get_db
 from app.database.models import DBUser
 
 router = APIRouter(
@@ -20,7 +21,7 @@ router = APIRouter(
     summary="Create a short URL",
     response_description="The created short URL details"
 )
-def create_short_url(
+async def create_short_url(
     url: str,
     description: str,
     db: Session = Depends(get_db),
@@ -33,7 +34,7 @@ def create_short_url(
     - **description**: Description for the URL
     - Returns: Created short URL details
     """
-    return db_url.add_url(long_url=url, description=description, user_id=user.id, db=db)
+    return await db_url.add_url(long_url=url, description=description, user_id=user.id, db=db)
 
 @router.get(
     "/{short_url}",
@@ -41,7 +42,7 @@ def create_short_url(
     summary="Redirect to original URL",
     response_description="Redirect response to original URL"
 )
-def redirect_short_url(
+async def redirect_short_url(
     short_url: str,
     db: Session = Depends(get_db)
 ):
@@ -51,7 +52,8 @@ def redirect_short_url(
     - **short_url**: The shortened URL identifier
     - Returns: 302 Redirect to original URL
     """
-    long_url = db_url.get_url(short_url=short_url, db=db).long_url
+    long_url = await db_url.get_url(short_url=short_url, db=db)
+    long_url = long_url.long_url
     return RedirectResponse(url=long_url, status_code=status.HTTP_302_FOUND)
 
 @router.get(
@@ -61,7 +63,7 @@ def redirect_short_url(
     summary="Get short URL details",
     response_description="Detailed information about the short URL"
 )
-def get_short_url_details(
+async def get_short_url_details(
     short_url: str,
     db: Session = Depends(get_db)
 ):
@@ -71,7 +73,7 @@ def get_short_url_details(
     - **short_url**: The shortened URL identifier
     - Returns: URL details including original URL and creation info
     """
-    return db_url.get_url(short_url=short_url, db=db)
+    return await db_url.get_url(short_url=short_url, db=db)
 
 @router.get(
     "/",
@@ -80,7 +82,7 @@ def get_short_url_details(
     summary="List user's URLs",
     response_description="Paginated list of user's short URLs"
 )
-def list_urls(
+async def list_urls(
     skip: int = Query(0, ge=0, description="Pagination offset"),
     limit: int = Query(10, ge=1, le=100, description="Items per page (1-100)"),
     db: Session = Depends(get_db),
@@ -93,7 +95,7 @@ def list_urls(
     - **limit**: Number of items to return per page
     - Returns: List of URL objects with metadata
     """
-    return db_url.get_user_urls(user_id=user.id, skip=skip, limit=limit, db=db)
+    return await db_url.get_user_urls(user_id=user.id, skip=skip, limit=limit, db=db)
 
 @router.put(
     "/{short_url}",
@@ -102,7 +104,7 @@ def list_urls(
     summary="Update short URL details",
     response_description="Updated URL details"
 )
-def update_url(
+async def update_url(
     url_data: UrlDataUpdate,
     db: Session = Depends(get_db),
     user: DBUser = Depends(get_current_user)
@@ -114,7 +116,7 @@ def update_url(
     - **url_data**: New URL details (long URL and/or description)
     - Returns: Updated URL details
     """
-    return db_url.update_url(
+    return await db_url.update_url(
         short_url=url_data.short_url,
         new_long_url=url_data.long_url,
         new_description=url_data.description,
@@ -129,7 +131,7 @@ def update_url(
     summary="Delete a short URL",
     response_description="Confirmation of deletion"
 )
-def delete_url(
+async def delete_url(
     short_url: str,
     db: Session = Depends(get_db),
     user: DBUser = Depends(get_current_user)
@@ -140,4 +142,4 @@ def delete_url(
     - **short_url**: The URL identifier to delete
     - Returns: Success message
     """
-    return db_url.delete_url(short_url=short_url, user_id=user.id, db=db)
+    return await db_url.delete_url(short_url=short_url, user_id=user.id, db=db)

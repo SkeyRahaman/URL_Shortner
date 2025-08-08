@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 
 from app.schemas import UserDetails, UserDisplay
-from app.database import get_db, db_user
+from app.database import db_user
+from app.database.dependencies import get_db
 from app.database.models import DBUser
-from app.authentication.authentication import get_current_user
+from app.authentication.dependencies import get_current_user
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,9 +29,10 @@ async def create_new_user(data: UserDetails, db: AsyncSession = Depends(get_db))
     - **data**: UserDetails schema containing email and password
     - Returns: Newly created user information
     """
+    print(data)
     if await db_user.check_email_address(db=db, email=data.email) or await db_user.check_username_exist(db=db,username=data.user_name):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered.")
-    return db_user.create_user(db, data)
+    return await db_user.create_user(db, data)
 
 @router.get(
     "/me",
@@ -40,7 +42,7 @@ async def create_new_user(data: UserDetails, db: AsyncSession = Depends(get_db))
     summary="Get current authenticated user details",
     response_description="The authenticated user's details"
 )
-async def get_current_user(user: DBUser = Depends(get_current_user)):
+async def get_current_user_router(user: DBUser = Depends(get_current_user)):
     """
     Returns the details of the currently authenticated user.
     
@@ -68,7 +70,7 @@ async def update_user(
     - At least one of email or password must be provided
     - Returns: Updated user information
     """
-    return db_user.update_user(user=user, email=email, password=password, db=db)
+    return await db_user.update_user(user=user, email=email, password=password, db=db)
 
 @router.delete(
     "/me",
@@ -86,4 +88,4 @@ async def delete_user(
     - This action cannot be undone
     - Returns: Success/error message
     """
-    return db_user.delete_user(user=user, db=db)
+    return await db_user.delete_user(user=user, db=db)

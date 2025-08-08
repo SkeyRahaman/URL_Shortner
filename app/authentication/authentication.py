@@ -1,35 +1,27 @@
-from fastapi import Depends, status
-from fastapi.security import OAuth2PasswordBearer
-from fastapi.exceptions import HTTPException
-from config import Config
 from typing import Optional
 from datetime import timedelta, datetime, timezone
-from jose import jwt
-from sqlalchemy.orm import Session
-from app.database import get_db, db_user
+from jose import jwt, JWTError
+from config import Config
 
-oauth2_scheme =  OAuth2PasswordBearer(tokenUrl = "auth/token")
+class JWTTokenManager:
+    SECRET_KEY = Config.SECRET_KEY
+    ALGORITHM = Config.ALGORITHM
+    EXPIRY_MINUTES = Config.ACCESS_TOKEN_EXPIRE_MINUTES
 
-def create_access_token(data : dict, expire_delta : Optional[timedelta] = None):
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expire_delta if expire_delta else timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp" : expire})
-    return jwt.encode(to_encode, key=Config.SECRET_KEY, algorithm=Config.ALGORITHM)
+    @staticmethod
+    def create_access_token(data: dict, expire_delta: Optional[timedelta] = None) -> str:
+        to_encode = data.copy()
+        expire = datetime.now(timezone.utc) + (
+            expire_delta if expire_delta else timedelta(minutes=JWTTokenManager.EXPIRY_MINUTES)
+        )
+        to_encode.update({"exp": expire})
+        encoded_jwt = jwt.encode(to_encode, key=JWTTokenManager.SECRET_KEY, algorithm=JWTTokenManager.ALGORITHM)
+        return encoded_jwt
 
-def get_current_user(token : str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials.",  
-        headers={"WWW-Authenticate": "Bearer"}, 
-    )
-    try:
-        payload = jwt.decode(token, Config.SECRET_KEY, algorithms=[Config.ALGORITHM])
-        user_name = payload.get("sub")
-        if user_name is None:
-            raise credentials_exception
-    except jwt.JWTError:
-        raise credentials_exception
-    user = db_user.get_user(user_name=user_name, db=db)
-    if not user or user is None:
-        raise credentials_exception
-    return user
+    @staticmethod
+    def decode_access_token(token: str) -> dict:
+        try:
+            payload = jwt.decode(token, key=JWTTokenManager.SECRET_KEY, algorithms=[JWTTokenManager.ALGORITHM])
+            return payload
+        except JWTError as e:
+            raise ValueError("Invalid or expired token") from e
