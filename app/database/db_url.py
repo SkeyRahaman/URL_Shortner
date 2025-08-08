@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 import hashlib
 import base64
 from app.database.models import DBUrl
@@ -13,7 +14,7 @@ def generate_short_code(original_url: str) -> str:
     encoded = base64.urlsafe_b64encode(sha256).decode().rstrip("=")
     return encoded[:Config.SHORT_URL_LENGTH]
 
-def add_url(long_url:str, db:Session, user_id:int, description=""):
+async def add_url(long_url:str, db: AsyncSession, user_id:int, description=""):
     new_url = DBUrl(
         long_url = long_url,
         short_url = generate_short_code(long_url),
@@ -21,56 +22,58 @@ def add_url(long_url:str, db:Session, user_id:int, description=""):
         user_id = user_id
     )
     db.add(new_url)
-    db.commit()
-    db.refresh(new_url) #to generate id
+    await db.commit()
+    await db.refresh(new_url) #to generate id
     return new_url
 
-def get_url(short_url : str, db:Session):
-    url = db.query(DBUrl).filter(DBUrl.short_url == short_url).first()
+async def get_url(short_url : str, db: AsyncSession):
+    result = await db.execute(select(DBUrl).filter(DBUrl.short_url == short_url))
+    url = result.scalars().first()
     if url:
         return url
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL not found.")
     
 # For GET /urls (list)
-def get_user_urls(user_id: int, skip: int, limit: int, db: Session):
-    return db.query(DBUrl).filter(DBUrl.user_id == user_id).offset(skip).limit(limit).all()
+async def get_user_urls(user_id: int, skip: int, limit: int, db: AsyncSession):
+    result = await db.execute(
+        select(DBUrl)
+        .filter(DBUrl.user_id == user_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    urls = result.scalars().all()
+    return urls
 
 # In db_url.py
-def update_url(
+async def update_url(
     short_url: str,
     new_long_url: str,
     new_description: str,  # Add this parameter
     user_id: int,
-    db: Session
+    db: AsyncSession
 ):
-    url = db.query(DBUrl).filter(
-        DBUrl.short_url == short_url,
-        DBUrl.user_id == user_id
-    ).first()
-    
+    result = await db.execute(
+        select(DBUrl)
+        .filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id)
+    )
+    url = result.scalars().first()
     if not url:
         raise HTTPException(status_code=404, detail="URL not found")
-    
+
     url.long_url = new_long_url
-    url.description = new_description  # Update description
-    db.commit()
-    db.refresh(url)
+    url.description = new_description
+    await db.commit()
+    await db.refresh(url)
     return url
 
-# For DELETE /urls/{short_url}
-def delete_url(short_url: str, user_id: int, db: Session):
-    url = db.query(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id).first()
-    if not url:
-        raise HTTPException(status_code=404, detail="URL not found or unauthorized")
-    db.delete(url)
-    db.commit()
 
 # For DELETE /urls/{short_url}
-def delete_url(short_url: str, user_id: int, db: Session):
-    url = db.query(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id).first()
+async def delete_url(short_url: str, user_id: int, db: AsyncSession):
+    result = await db.execute(select(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id))
+    url = result.scalars().first()
     if not url:
         raise HTTPException(status_code=404, detail="URL not found or unauthorized")
-    db.delete(url)
-    db.commit()
+    await db.delete(url)
+    await db.commit()
     return {"Message" : "URL Deleted."}

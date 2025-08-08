@@ -1,6 +1,6 @@
 name: Run tests on every push
 
-on: push
+on: pull_request
 
 permissions:
   contents: read
