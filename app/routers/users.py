@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
+from fastapi.responses import HTMLResponse
 
 from app.schemas import UserDetails, UserDisplay
 from app.database import db_user
@@ -88,4 +89,8 @@ async def delete_user(
     - This action cannot be undone
     - Returns: Success/error message
     """
-    return await db_user.delete_user(user=user, db=db)
+    response = await db_user.delete_user(user=user, db=db)
+    if response:
+        return {"Message" : "User Deleted."}
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")

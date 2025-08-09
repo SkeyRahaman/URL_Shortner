@@ -64,10 +64,9 @@ class TestDBUrlFunctions:
 
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with pytest.raises(HTTPException) as exc_info:
-            await db_url.get_url("nonexistent_short_url", mock_db)
+        response = await db_url.get_url("nonexistent_short_url", mock_db)
 
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        assert response is None
 
     async def test_get_user_urls(self, mock_db, sample_dburl):
         mock_scalar_result = MagicMock()
@@ -118,10 +117,9 @@ class TestDBUrlFunctions:
 
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with pytest.raises(HTTPException) as exc_info:
-            await db_url.update_url("nonexistent", "url", "desc", 1, mock_db)
+        response = await db_url.update_url("nonexistent", "url", "desc", 1, mock_db)
 
-        assert exc_info.value.status_code == 404
+        assert response is None
 
     async def test_delete_url_success(self, mock_db, sample_dburl):
         mock_scalar_result = MagicMock()
@@ -138,7 +136,7 @@ class TestDBUrlFunctions:
 
         mock_db.delete.assert_awaited_once_with(sample_dburl)
         mock_db.commit.assert_awaited_once()
-        assert response == {"Message": "URL Deleted."}
+        assert response is True
 
     async def test_delete_url_not_found(self, mock_db):
         mock_scalar_result = MagicMock()
@@ -149,7 +147,6 @@ class TestDBUrlFunctions:
 
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with pytest.raises(HTTPException) as exc_info:
-            await db_url.delete_url("nonexistent_short_url", 1, mock_db)
+        response = await db_url.delete_url("nonexistent_short_url", 1, mock_db)
 
-        assert exc_info.value.status_code == 404
+        assert response is False

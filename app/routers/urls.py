@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status, Query
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from app.authentication.dependencies import get_current_user
@@ -142,4 +143,8 @@ async def delete_url(
     - **short_url**: The URL identifier to delete
     - Returns: Success message
     """
-    return await db_url.delete_url(short_url=short_url, user_id=user.id, db=db)
+    response = await db_url.delete_url(short_url=short_url, user_id=user.id, db=db)
+    if response:
+        return {"Message" : "URL Deleted."}
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL not found.")
