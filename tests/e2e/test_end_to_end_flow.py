@@ -23,7 +23,7 @@ UPDATED_URL_PAYLOAD = {
 @pytest.mark.asyncio
 class TestEndToEndFlow:
 
-    async def test_full_user_url_flow(self, async_client: AsyncClient):
+    async def test_full_user_url_flow(self, async_client: AsyncClient, override_get_db):
         # 1. Create user
         res = await async_client.post(app.url_path_for("create_user"), json=USER_PAYLOAD)
         assert res.status_code in (201, 409)

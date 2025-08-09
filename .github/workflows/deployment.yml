@@ -2,7 +2,7 @@ name: Deploy on Main Push
 
 on:
   push:
-    branches: [ "main" ]  # Only trigger when code is pushed to main
+    branches: [ "main" ]  
 
 jobs:
   trigger-deployment:

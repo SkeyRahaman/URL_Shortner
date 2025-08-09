@@ -6,5 +6,5 @@ python-jose
 python-multipart
 pymysql
 cryptography
-psycopg2
+psycopg2-binary
 aiosqlite
