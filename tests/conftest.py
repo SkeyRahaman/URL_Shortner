@@ -22,7 +22,7 @@ TEST_DATABASE_URL = "sqlite:///./test_db.db"
 engine = create_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-TEST_ASYNC_DATABASE_URL = "sqlite+aiosqlite:///./test_async_db.db"
+TEST_ASYNC_DATABASE_URL = "sqlite+aiosqlite:///test_async_db.db"
 
 async_engine = create_async_engine(TEST_ASYNC_DATABASE_URL, echo=False)
 AsyncTestingSessionLocal = sessionmaker(
