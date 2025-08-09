@@ -23,43 +23,46 @@ async def add_url(long_url:str, db: AsyncSession, user_id:int, description=""):
     )
     db.add(new_url)
     await db.commit()
-    await db.refresh(new_url) #to generate id
+    await db.refresh(new_url) 
     return new_url
 
-async def get_url(short_url : str, db: AsyncSession):
-    result = await db.execute(select(DBUrl).filter(DBUrl.short_url == short_url))
-    url = result.scalars().first()
-    if url:
-        return url
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="URL not found.")
-    
-# For GET /urls (list)
+async def get_url(short_url: str, db: AsyncSession):
+    """Fetch a URL object by its short form."""
+    result = await db.execute(
+        select(DBUrl).filter(DBUrl.short_url == short_url)
+    )
+    return result.scalars().first()
+
+
 async def get_user_urls(user_id: int, skip: int, limit: int, db: AsyncSession):
+    """Fetch all URLs for a user with pagination."""
     result = await db.execute(
         select(DBUrl)
         .filter(DBUrl.user_id == user_id)
         .offset(skip)
         .limit(limit)
     )
-    urls = result.scalars().all()
-    return urls
+    return result.scalars().all()
 
-# In db_url.py
+
 async def update_url(
     short_url: str,
     new_long_url: str,
-    new_description: str,  # Add this parameter
+    new_description: str,
     user_id: int,
     db: AsyncSession
 ):
+    """
+    Update a URL's long_url and description for the given user.
+    Returns updated URL object, or None if not found.
+    """
     result = await db.execute(
         select(DBUrl)
         .filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id)
     )
     url = result.scalars().first()
     if not url:
-        raise HTTPException(status_code=404, detail="URL not found")
+        return None
 
     url.long_url = new_long_url
     url.description = new_description
@@ -68,12 +71,18 @@ async def update_url(
     return url
 
 
-# For DELETE /urls/{short_url}
 async def delete_url(short_url: str, user_id: int, db: AsyncSession):
-    result = await db.execute(select(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id))
+    """
+    Delete a URL for a user.
+    Returns True if deleted, False if not found.
+    """
+    result = await db.execute(
+        select(DBUrl).filter(DBUrl.short_url == short_url, DBUrl.user_id == user_id)
+    )
     url = result.scalars().first()
     if not url:
-        raise HTTPException(status_code=404, detail="URL not found or unauthorized")
+        return False
+
     await db.delete(url)
     await db.commit()
-    return {"Message" : "URL Deleted."}
+    return True

@@ -1,12 +1,11 @@
 from app.schemas import UserDetails
 from app.database.models import DBUser
-from fastapi.exceptions import HTTPException
-from fastapi import status
 from fastapi.concurrency import run_in_threadpool
-from app.authentication.password_hash import PasswordHasher
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from typing import Optional
+
+from app.authentication.password_hash import PasswordHasher
 
 async def check_email_address(db: AsyncSession,email : str):
     result = await db.execute(select(DBUser).filter(DBUser.email == email))
@@ -29,34 +28,46 @@ async def create_user(db: AsyncSession, data : UserDetails):
     await db.refresh(new_user)
     return new_user
 
-async def update_user(db: AsyncSession, user : DBUser,email:str,password:str):
-    result = await db.execute(select(DBUser).filter(DBUser.id == user.id))
+async def update_user(
+    db: AsyncSession,
+    user: DBUser,
+    email: Optional[str] = None,
+    password: Optional[str] = None
+) -> Optional[DBUser]:
+    """Update an existing user's email and/or password."""
+    result = await db.execute(
+        select(DBUser).filter(DBUser.id == user.id)
+    )
     db_user = result.scalars().first()
-    if db_user:
-        if email:
-            db_user.email = email
-        if password:
-            db_user.password = PasswordHasher.get_password_hash(password)
-        await db.commit()
-        await db.refresh(db_user)
-        return db_user
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")
-    
-async def delete_user(user : DBUser, db: AsyncSession):
-    result = await db.execute(select(DBUser).filter(DBUser.email == user.email))
+    if not db_user:
+        return None
+
+    if email:
+        db_user.email = email
+    if password:
+        db_user.password = PasswordHasher.get_password_hash(password)
+
+    await db.commit()
+    await db.refresh(db_user)
+    return db_user
+
+
+async def delete_user(
+    user: DBUser,
+    db: AsyncSession
+) -> bool:
+    """Delete a user by email. Returns True if deleted, False if not found."""
+    result = await db.execute(
+        select(DBUser).filter(DBUser.email == user.email)
+    )
     db_user = result.scalars().first()
-    if db_user:
-        await db.delete(db_user)
-        await db.commit()
-        return {"Message" : "User Deleted."}
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")
+    if not db_user:
+        return False
+
+    await db.delete(db_user)
+    await db.commit()
+    return True
     
 async def get_user(user_name:str, db: AsyncSession):
     result = await db.execute(select(DBUser).filter(DBUser.user_name == user_name))
-    user = result.scalars().first()
-    if user:
-        return user
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Not found.")
+    return result.scalars().first()

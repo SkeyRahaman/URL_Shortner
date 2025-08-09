@@ -103,9 +103,8 @@ class TestDBUserFunctions:
         mock_result.scalars.return_value = mock_scalar_result
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with pytest.raises(HTTPException) as exc_info:
-            await db_user_functions.update_user(mock_db, mock_db_user, "email@example.com", "somepass")
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        user = await db_user_functions.update_user(mock_db, mock_db_user, "email@example.com", "somepass")
+        assert user is None
 
     async def test_delete_user_success(self, mock_db, mock_db_user):
         mock_scalar_result = MagicMock()
@@ -121,7 +120,7 @@ class TestDBUserFunctions:
         response = await db_user_functions.delete_user(mock_db_user, mock_db)
         mock_db.delete.assert_awaited_with(mock_db_user)
         mock_db.commit.assert_awaited()
-        assert response == {"Message": "User Deleted."}
+        assert response is True
 
     async def test_delete_user_not_found(self, mock_db, mock_db_user):
         mock_scalar_result = MagicMock()
@@ -131,9 +130,8 @@ class TestDBUserFunctions:
         mock_result.scalars.return_value = mock_scalar_result
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with pytest.raises(HTTPException) as exc_info:
-            await db_user_functions.delete_user(mock_db_user, mock_db)
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        response = await db_user_functions.delete_user(mock_db_user, mock_db)
+        assert response is False
 
     async def test_get_user_found(self, mock_db, mock_db_user):
         mock_scalar_result = MagicMock()
@@ -154,7 +152,6 @@ class TestDBUserFunctions:
         mock_result.scalars.return_value = mock_scalar_result
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with pytest.raises(HTTPException) as exc_info:
-            await db_user_functions.get_user("invaliduser", mock_db)
+        user = await db_user_functions.get_user("invaliduser", mock_db)
 
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        assert user is None
