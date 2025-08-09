@@ -1,15 +1,19 @@
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from unittest.mock import MagicMock
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from app.schemas import UserDetails, UrlDisplay, UrlDataUpdate
 from app.database.models import Base, DBUser, DBUrl
+from app.database.db_url import generate_short_code
 from app.authentication.authentication import JWTTokenManager
 from app.authentication.password_hash import PasswordHasher
+from app.main import app
+from app.database.dependencies import get_db
 from config import Config
 
 TEST_DATABASE_URL = "sqlite:///./test_db.db"
@@ -160,56 +164,40 @@ async def test_user(async_db_session: AsyncSession):
     async_db_session.add(user)  # no await here because add is sync
     await async_db_session.commit()
     await async_db_session.refresh(user)
-    return user
+    yield user
+    await async_db_session.delete(user)
+    await async_db_session.commit()
 
 @pytest_asyncio.fixture
 async def auth_token(test_user):
     return JWTTokenManager.create_access_token(data={"sub": test_user.user_name})
 
+@pytest_asyncio.fixture
+async def async_client():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
 
+@pytest_asyncio.fixture
+async def override_get_db(async_db_session):
+    # Provide the same db session as in test_user fixture
+    async def _override_get_db():
+        yield async_db_session
+    app.dependency_overrides[get_db] = _override_get_db
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
-"""
-import os
-print(os.curdir)
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from jose import jwt
-
-from app.database import get_db
-from app.database.hash import PasswordHasher
-from app.main import app
-from app.database.models import Base, DBUser
-from config import Config as settings
-
-# Database setup
-TEST_DB_URL = "sqlite:///./test.db"
-engine = create_engine(TEST_DB_URL)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Fixtures
-@pytest.fixture(scope="module")
-def db_session():
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
-
-@pytest.fixture(scope="module")
-def client(db_session):
-    def override_get_db():
-        yield db_session
-    app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
-
-
-
-
-
-@pytest.fixture
-def auth_headers(auth_token):
-    return {"Authorization": f"Bearer {auth_token}"}
-
-"""
+@pytest_asyncio.fixture
+async def test_url(async_db_session: AsyncSession, test_user: DBUser):
+    url = DBUrl(
+        long_url = Config.TEST_URL['url'],
+        short_url = generate_short_code(Config.TEST_URL['url']),
+        description = Config.TEST_URL['description'],
+        user_id = test_user.id
+    )
+    async_db_session.add(url)
+    await async_db_session.commit()
+    await async_db_session.refresh(url)
+    yield url
+    await async_db_session.delete(url)
+    await async_db_session.commit()

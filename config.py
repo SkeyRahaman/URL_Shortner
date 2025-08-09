@@ -22,7 +22,7 @@ class Config:
         DATABASE_URL = f"{DB_PROTOCOL}://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
-    SECRET_KEY = "Some random secret key"
+    SECRET_KEY = os.getenv('SECRET_KEY', "Some random secret key")
     ALGORITHM = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -36,6 +36,10 @@ class Config:
         "email": "test1@email.com",
         "password": "password1",
         "username": "test_username1"
+    }
+    TEST_URL = {
+        "url": "https://www.youtube.com/",
+        "description": """YouTube is a massive online platform where users can upload, share, and watch videos, creating a global community of content creators and viewers.""",
     }
     AUTH_PAYLOAD = {
         "grant_type": "password",

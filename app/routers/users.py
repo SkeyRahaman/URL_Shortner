@@ -30,7 +30,6 @@ async def create_new_user(data: UserDetails, db: AsyncSession = Depends(get_db))
     - **data**: UserDetails schema containing email and password
     - Returns: Newly created user information
     """
-    print(data)
     if await db_user.check_email_address(db=db, email=data.email) or await db_user.check_username_exist(db=db,username=data.user_name):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered.")
     return await db_user.create_user(db, data)
