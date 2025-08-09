@@ -148,7 +148,7 @@ async def setup_async_database():
         await conn.run_sync(Base.metadata.drop_all)
     await async_engine.dispose()
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="module", autouse=True)
 async def async_db_session():
     async with AsyncTestingSessionLocal() as session:
         yield session
