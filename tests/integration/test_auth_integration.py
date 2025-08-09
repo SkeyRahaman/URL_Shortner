@@ -57,7 +57,7 @@ class TestGetToken:
         assert response.status_code == 401
         assert response.json()["detail"] == "Invalid Credentials."
 
-    async def test_get_token_wrong_password(self, test_user: DBUser, async_client: AsyncClient):
+    async def test_get_token_wrong_password(self, test_user: DBUser, async_client: AsyncClient, override_get_db):
         response = await async_client.post(
             TestGetToken.TOKEN_URL,
             data={"username": test_user.user_name, "password": "wrong password"}
@@ -65,7 +65,7 @@ class TestGetToken:
         assert response.status_code == 401
         assert response.json()["detail"] == "Invalid Credentials."
 
-    async def test_get_token_wrong_credentials(self, async_client: AsyncClient):
+    async def test_get_token_wrong_credentials(self, async_client: AsyncClient, override_get_db):
         response = await async_client.post(
             TestGetToken.TOKEN_URL,
             data={"username": "wrong password", "password": "wrong password"}
