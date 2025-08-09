@@ -77,7 +77,7 @@ async def get_short_url_details(
     return await db_url.get_url(short_url=short_url, db=db)
 
 @router.get(
-    "/",
+    "",
     response_model=list[UrlDisplay],
     name="list_user_urls",
     summary="List user's URLs",

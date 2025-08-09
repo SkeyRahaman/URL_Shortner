@@ -4,9 +4,6 @@ import hashlib
 import base64
 from app.database.models import DBUrl
 from config import Config
-from fastapi.exceptions import HTTPException
-from fastapi import status
-
 
 def generate_short_code(original_url: str) -> str:
     """Generate a base64-encoded SHA-256 hash and truncate"""
