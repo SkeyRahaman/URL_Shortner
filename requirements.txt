@@ -8,3 +8,4 @@ pymysql
 cryptography
 psycopg2-binary
 aiosqlite
+asyncpg
