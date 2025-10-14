@@ -6,6 +6,7 @@ from sqlalchemy.future import select
 from typing import Optional
 
 from app.authentication.password_hash import PasswordHasher
+from app.utils.logger import log
 
 async def check_email_address(db: AsyncSession,email : str):
     result = await db.execute(select(DBUser).filter(DBUser.email == email))
@@ -26,6 +27,7 @@ async def create_user(db: AsyncSession, data : UserDetails):
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+    log.info(f"Created new user: {new_user.user_name} with email: {new_user.email}")
     return new_user
 
 async def update_user(
@@ -49,6 +51,7 @@ async def update_user(
 
     await db.commit()
     await db.refresh(db_user)
+    log.info(f"Updated user: {db_user.user_name} with email: {db_user.email}")
     return db_user
 
 
@@ -66,6 +69,7 @@ async def delete_user(
 
     await db.delete(db_user)
     await db.commit()
+    log.info(f"Deleted user: {db_user.user_name} with email: {db_user.email}")
     return True
     
 async def get_user(user_name:str, db: AsyncSession):

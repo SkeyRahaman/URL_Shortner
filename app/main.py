@@ -5,6 +5,7 @@ from app.routers import urls, users
 from datetime import datetime,timezone
 from config import Config
 from contextlib import asynccontextmanager
+from app.middlewares.logger_middleware import LogCorrelationIdMiddleware
 
 @asynccontextmanager
 async def lifespan(app):
@@ -24,6 +25,7 @@ app.include_router(auth_router.router, prefix=Config.URL_PREFIX)
 app.include_router(users.router, prefix=Config.URL_PREFIX)
 app.include_router(urls.router, prefix=Config.URL_PREFIX)
 
+app.add_middleware(LogCorrelationIdMiddleware)
 @app.get(f"{Config.URL_PREFIX}/health")
 async def health_check():
     return {
