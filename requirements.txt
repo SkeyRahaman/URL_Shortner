@@ -9,3 +9,6 @@ cryptography
 psycopg2-binary
 aiosqlite
 asyncpg
+structlog
+greenlet
+bcrypt==4.0.1

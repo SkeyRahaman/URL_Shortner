@@ -5,6 +5,8 @@ import base64
 from app.database.models import DBUrl
 from config import Config
 
+from app.utils.logger import log
+
 def generate_short_code(original_url: str) -> str:
     """Generate a base64-encoded SHA-256 hash and truncate"""
     sha256 = hashlib.sha256(original_url.encode()).digest()
@@ -12,6 +14,9 @@ def generate_short_code(original_url: str) -> str:
     return encoded[:Config.SHORT_URL_LENGTH]
 
 async def add_url(long_url:str, db: AsyncSession, user_id:int, description=""):
+    """
+    Add a new URL to the database and return the created URL object.
+    """
     new_url = DBUrl(
         long_url = long_url,
         short_url = generate_short_code(long_url),
@@ -21,6 +26,7 @@ async def add_url(long_url:str, db: AsyncSession, user_id:int, description=""):
     db.add(new_url)
     await db.commit()
     await db.refresh(new_url) 
+    log.info(f"Added new URL: {new_url.short_url} for user {user_id}")
     return new_url
 
 async def get_url(short_url: str, db: AsyncSession):
@@ -65,6 +71,7 @@ async def update_url(
     url.description = new_description
     await db.commit()
     await db.refresh(url)
+    log.info(f"Updated URL: {short_url} for user {user_id}")
     return url
 
 
@@ -82,4 +89,5 @@ async def delete_url(short_url: str, user_id: int, db: AsyncSession):
 
     await db.delete(url)
     await db.commit()
+    log.info(f"Deleted URL: {short_url} for user {user_id}")
     return True

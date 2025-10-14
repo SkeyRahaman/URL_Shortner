@@ -2,11 +2,13 @@ from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.concurrency import run_in_threadpool
+
 from app.database.dependencies import  get_db
 from app.database import db_user
 from app.authentication.password_hash import PasswordHasher
 from app.authentication.authentication import JWTTokenManager
-from fastapi.concurrency import run_in_threadpool
+from app.utils.logger import log
 
 router = APIRouter(
     prefix="/auth",
@@ -34,6 +36,7 @@ async def get_token(
                 "sub": user.user_name
             }
         )
+    log.info(f"User {user.user_name} authenticated successfully.")
     return {
         "access_token": access_token,
         "token_type": "bearer",

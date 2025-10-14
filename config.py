@@ -30,6 +30,12 @@ class Config:
     VERSION = "2.0.0"
     URL_PREFIX = os.getenv('URL_PREFIX', '')
 
+    # Logging Configuration
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    LOG_FILENAME = os.getenv("LOG_FILENAME", "app.json")
+    LOG_FOLDERNAME = os.getenv("LOG_FOLDERNAME", "logs")
+    LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", 5_000_000))
+    LOG_BACKUP_COUNT = int(os.getenv("LOG_BACKUP_COUNT", 1))
 
     #Test Data
     TEST_USER = {
