@@ -1,19 +1,17 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware # 1. Import the middleware
 from app.authentication import auth_router
 from app.database import create_db_and_tables
 from app.routers import urls, users
-from datetime import datetime,timezone
+from datetime import datetime, timezone
 from config import Config
 from contextlib import asynccontextmanager
 from app.middlewares.logger_middleware import LogCorrelationIdMiddleware
 
 @asynccontextmanager
 async def lifespan(app):
-    # Code before yield runs at startup
     await create_db_and_tables()
     yield
-    # Code after yield runs at shutdown
-
 
 app = FastAPI(
     title="URL_Shortner",
@@ -21,11 +19,27 @@ app = FastAPI(
     version=Config.VERSION,
     lifespan=lifespan
 )
+
+# 2. Define allowed origins
+origins = [
+    "http://localhost:5173",
+]
+
+# 3. Add the middleware to the app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(auth_router.router, prefix=Config.URL_PREFIX)
 app.include_router(users.router, prefix=Config.URL_PREFIX)
 app.include_router(urls.router, prefix=Config.URL_PREFIX)
 
 app.add_middleware(LogCorrelationIdMiddleware)
+
 @app.get(f"{Config.URL_PREFIX}/health")
 async def health_check():
     return {
