@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware # 1. Import the middleware
+from fastapi.middleware.cors import CORSMiddleware
 from app.authentication import auth_router
 from app.database import create_db_and_tables
 from app.routers import urls, users
@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from config import Config
 from contextlib import asynccontextmanager
 from app.middlewares.logger_middleware import LogCorrelationIdMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 @asynccontextmanager
 async def lifespan(app):
@@ -47,3 +48,6 @@ async def health_check():
             "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "version": Config.VERSION
         }
+
+# Initialize and expose the /metrics endpoint
+Instrumentator().instrument(app).expose(app)
