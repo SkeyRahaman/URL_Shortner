@@ -12,6 +12,7 @@ ENV/
 
 # FastAPI - Uvicorn logs
 *.log
+logs/
 
 # VSCode settings
 .vscode/
