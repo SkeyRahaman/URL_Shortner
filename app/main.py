@@ -51,3 +51,7 @@ async def health_check():
 
 # Initialize and expose the /metrics endpoint
 Instrumentator().instrument(app).expose(app)
+
+# Mount the MCP server at /mcp
+from app.mcp.server import setup_mcp
+setup_mcp(app)
