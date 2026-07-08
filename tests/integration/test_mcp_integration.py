@@ -44,18 +44,18 @@ class TestMcpIntegration:
         tool_names = {tool.name for tool in mcp.tools}
 
         expected_tools = {
-            "token_auth_token_post",
-            "create_user_users_post",
-            "get_current_user_users_me_get",
-            "update_current_user_users_me_put",
-            "delete_current_user_users_me_delete",
-            "create_short_url_urls_create_short_url_post",
-            "redirect_short_url_urls__short_url__get",
-            "get_short_url_details_urls__short_url__details_get",
-            "list_user_urls_urls_get",
-            "update_short_url_urls__short_url__put",
-            "delete_short_url_urls__short_url__delete",
-            "health_check_health_get",
+            "login_for_token",
+            "create_user",
+            "get_current_user",
+            "update_current_user",
+            "delete_current_user",
+            "create_short_url",
+            "redirect_short_url",
+            "get_short_url_details",
+            "list_user_urls",
+            "update_short_url",
+            "delete_short_url",
+            "health_check",
         }
         assert expected_tools.issubset(tool_names), (
             f"Missing tools: {expected_tools - tool_names}"
