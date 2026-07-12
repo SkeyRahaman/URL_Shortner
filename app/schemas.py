@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
 
 class UserDetailsUpdatable(BaseModel):
     email : str = None
@@ -20,6 +21,7 @@ class UrlData(BaseModel):
 class UrlDisplay(UrlData):
     id :int
     short_url :str
+    created_at :datetime = None
     model_config = ConfigDict(populate_by_name=True)
 
 class UrlDataUpdate(UrlData):

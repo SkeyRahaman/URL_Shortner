@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import Relationship
 from sqlalchemy.orm import declarative_base
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -19,5 +20,6 @@ class DBUrl(Base):
     short_url = Column(String(50))
     description = Column(String(400))
     user_id = Column(Integer, ForeignKey("Users.id"))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     user = Relationship("DBUser", back_populates="urls")
     

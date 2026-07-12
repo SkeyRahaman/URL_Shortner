@@ -35,6 +35,7 @@ class TestDBModels:
         assert url.short_url == "exmpl"
         assert url.description == "Example URL"
         assert url.user_id == user.id
+        assert url.created_at is not None
 
         # Relationship checks
         assert url.user == user

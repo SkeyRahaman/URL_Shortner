@@ -17,6 +17,8 @@ class TestUrlsIntegration:
         data = resp.json()
         assert data["description"] == Config.TEST_URL['description']
         assert "short_url" in data
+        assert "created_at" in data
+        assert data["created_at"] is not None
 
     async def test_redirect_short_url(self, async_client: AsyncClient, test_url:DBUrl):
         resp = await async_client.get(f"{TestUrlsIntegration.BASE_URL}/{test_url.short_url}", follow_redirects=False)
@@ -29,6 +31,8 @@ class TestUrlsIntegration:
         data = resp.json()
         assert data["short_url"] == test_url.short_url
         assert data["long_url"] == test_url.long_url
+        assert "created_at" in data
+        assert data["created_at"] is not None
 
     async def test_list_user_urls(self, async_client: AsyncClient, auth_token: str, test_url: DBUrl):
         headers = {"Authorization": f"Bearer {auth_token}"}
@@ -37,6 +41,8 @@ class TestUrlsIntegration:
         urls = resp.json()
         assert isinstance(urls, list)
         assert any(u["description"] == test_url.description for u in urls)
+        assert all("created_at" in u for u in urls)
+        assert all(u["created_at"] is not None for u in urls)
 
     async def test_update_short_url(self, async_client: AsyncClient, auth_token: str, test_url: DBUrl):
         headers = {"Authorization": f"Bearer {auth_token}"}
@@ -50,6 +56,8 @@ class TestUrlsIntegration:
         data = resp.json()
         assert data["long_url"] == "https://example.com/updated"
         assert data["description"] == "Updated Desc"
+        assert "created_at" in data
+        assert data["created_at"] is not None
 
     async def test_delete_short_url(self, async_client: AsyncClient, auth_token: str, test_url: DBUrl):
         headers = {"Authorization": f"Bearer {auth_token}"}
