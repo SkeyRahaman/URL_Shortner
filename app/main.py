@@ -1,25 +1,25 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.authentication import auth_router
-from app.database import create_db_and_tables
-from app.routers import urls, users
+from app.routers import links
 from datetime import datetime, timezone
 from config import Config
-from contextlib import asynccontextmanager
 from app.middlewares.logger_middleware import LogCorrelationIdMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-
-@asynccontextmanager
-async def lifespan(app):
-    await create_db_and_tables()
-    yield
+from app.utils.logger import log
 
 app = FastAPI(
-    title="URL_Shortner",
+    title="url_service",
     description="This API powers a URL shortener app built with FastAPI.",
-    version=Config.VERSION,
-    lifespan=lifespan
+    version=Config.VERSION
 )
+
+@app.on_event("startup")
+async def startup_event():
+    log.info("Starting up url_service API", version=Config.VERSION)
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    log.info("Shutting down url_service API")
 
 # 2. Define allowed origins
 origins = [
@@ -40,9 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router.router, prefix=Config.URL_PREFIX)
-app.include_router(users.router, prefix=Config.URL_PREFIX)
-app.include_router(urls.router, prefix=Config.URL_PREFIX)
+app.include_router(links.router, prefix=Config.URL_PREFIX)
 
 app.add_middleware(LogCorrelationIdMiddleware)
 
@@ -62,6 +60,7 @@ async def health_check():
     - **Returns**: {"status": "HEALTHY", "timestamp": "<ISO 8601 UTC>", "version": "<semver>"}
     - **Auth**: Not required (public endpoint)
     """
+    log.info("health_check_requested")
     return {
             "status": "HEALTHY",
             "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -70,7 +69,3 @@ async def health_check():
 
 # Initialize and expose the /metrics endpoint
 Instrumentator().instrument(app).expose(app)
-
-# Mount the MCP server at /mcp
-from app.mcp.server import setup_mcp
-setup_mcp(app)

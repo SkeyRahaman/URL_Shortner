@@ -1,55 +1,30 @@
-import os
+from app.core.secrets import get_secret, get_secret_int
 from urllib.parse import quote_plus
 
 class Config:
-    # Get environment variables with defaults
-    DB_PROTOCOL = os.getenv('DATABASE_PR0TOCOL', 'sqlite')  # Changed to SQLite
-    DB_USER = os.getenv('DATABASE_USER', '')                 # Not needed for SQLite
-    DB_PASSWORD = os.getenv('DATABASE_PASSW0RD', '')        # Not needed for SQLite
-    DB_HOST = os.getenv('DATABASE_HOSTNAME', '')             # Not needed for SQLite
-    DB_PORT = os.getenv('DATABASE_PORT', '')                 # Not needed for SQLite
-    DB_NAME = os.getenv('DATABASE_NAME', 'url_shortner.db')  # SQLite uses a file
+    DB_PROTOCOL = get_secret('DATABASE_PROTOCOL', 'postgresql+psycopg')
+    DB_USER = get_secret('DATABASE_USER', 'postgres')
+    DB_PASSWORD = get_secret('DATABASE_PASSWORD', 'postgres')
+    DB_HOST = get_secret('DATABASE_HOSTNAME', 'localhost')
+    DB_PORT = get_secret('DATABASE_PORT', '5432')
+    DB_NAME = get_secret('DATABASE_NAME', 'url_service')
 
-    # SQLite has a different URL format
-    if DB_PROTOCOL.lower() == 'sqlite':
-        # SQLite connection string (uses a file path)
-        DATABASE_URL = f"sqlite+aiosqlite:///{DB_NAME}"
-    elif DB_PROTOCOL.lower() == 'manual':
-        DATABASE_URL = os.getenv('DATABASE_URL_MANUAL', f"sqlite:///{DB_NAME}") 
-    else:
-        # For other databases (MySQL, PostgreSQL, etc.)
-        encoded_password = quote_plus(DB_PASSWORD)
-        DATABASE_URL = f"{DB_PROTOCOL}://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    encoded_password = quote_plus(DB_PASSWORD)
+    DATABASE_URL = f"{DB_PROTOCOL}://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-
-    SECRET_KEY = os.getenv('SECRET_KEY', "Some random secret key")
-    ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-    SHORT_URL_LENGTH = 8
-    VERSION = "2.0.0"
-    URL_PREFIX = os.getenv('URL_PREFIX', '')
+    SLUG_LENGTH = get_secret_int('SLUG_LENGTH', 8)
+    VERSION = "3.0.0"
+    URL_PREFIX = get_secret('URL_PREFIX', '')
 
     # Logging Configuration
-    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-    LOG_FILENAME = os.getenv("LOG_FILENAME", "app.json")
-    LOG_FOLDERNAME = os.getenv("LOG_FOLDERNAME", "logs")
-    LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", 5_000_000))
-    LOG_BACKUP_COUNT = int(os.getenv("LOG_BACKUP_COUNT", 1))
+    LOG_LEVEL = get_secret('LOG_LEVEL', 'INFO')
+    LOG_FILENAME = get_secret('LOG_FILENAME', 'app.json')
+    LOG_FOLDERNAME = get_secret('LOG_FOLDERNAME', 'logs')
+    LOG_MAX_BYTES = get_secret_int('LOG_MAX_BYTES', 5_000_000)
+    LOG_BACKUP_COUNT = get_secret_int('LOG_BACKUP_COUNT', 1)
 
-    #Test Data
-    TEST_USER = {
-        "email": "test1@email.com",
-        "password": "password1",
-        "username": "test_username1"
-    }
+    # Test Data
     TEST_URL = {
         "url": "https://www.youtube.com/",
-        "description": """YouTube is a massive online platform where users can upload, share, and watch videos, creating a global community of content creators and viewers.""",
-    }
-    AUTH_PAYLOAD = {
-        "grant_type": "password",
-        "scope": "",
-        "client_id": "string",
-        "client_secret": "string"
+        "description": "YouTube video platform.",
     }

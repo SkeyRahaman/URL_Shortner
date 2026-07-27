@@ -1,19 +1,16 @@
-# Base image (lightweight Python 3.11)
 FROM python:3.11-slim
 
-# Set working directory inside the container
 WORKDIR /app
 
-# Copy requirements first (for caching)
-COPY requirements.txt .
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
 COPY . .
 
-EXPOSE 8000
-
-# Command to run the app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run migrations and start app
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000

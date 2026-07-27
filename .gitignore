@@ -69,3 +69,6 @@ local_settings.py
 *.egg-info/
 dist/
 build/
+
+# Secrets Injection Directory
+secrets/

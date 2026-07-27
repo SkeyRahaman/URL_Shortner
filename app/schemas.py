@@ -1,28 +1,32 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, HttpUrl
 from datetime import datetime
 
-class UserDetailsUpdatable(BaseModel):
-    email : str = None
-    password : str = None
+class LinkCreate(BaseModel):
+    """Request body for creating a link."""
+    original_url: str
+    description: str | None = Field(None, max_length=400)
+    custom_slug: str | None = Field(None, max_length=50, pattern=r'^[a-zA-Z0-9_-]+$')
+    expires_at: datetime | None = None
 
-class UserDetails(UserDetailsUpdatable):
-    user_name : str
+class LinkUpdate(BaseModel):
+    """Request body for updating a link. All fields optional (partial update)."""
+    original_url: str | None = None
+    description: str | None = Field(None, max_length=400)
+    is_active: bool | None = None
+    expires_at: datetime | None = None
 
-class UserDisplay(BaseModel):
-    id :int
-    user_name : str
-    email : str = None
-    model_config = ConfigDict(populate_by_name=True)
-
-class UrlData(BaseModel):
-    long_url: str  # Ensures valid URLs
-    description: str = Field(max_length=200)  # Limit description length
-
-class UrlDisplay(UrlData):
-    id :int
-    short_url :str
-    created_at :datetime = None
-    model_config = ConfigDict(populate_by_name=True)
-
-class UrlDataUpdate(UrlData):
-    short_url: str 
+class LinkResponse(BaseModel):
+    """Response model for a link."""
+    id: int
+    slug: str
+    original_url: str
+    description: str | None
+    is_custom_alias: bool
+    is_active: bool
+    is_deleted: bool
+    total_clicks: int
+    expires_at: datetime | None
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
