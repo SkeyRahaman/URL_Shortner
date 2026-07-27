@@ -72,3 +72,6 @@ build/
 
 # Secrets Injection Directory
 secrets/
+
+# Prometheus Configuration
+prometheus.yml
